@@ -17,7 +17,7 @@ from .lurktype import LurkType
 # 3-34	Recipient Name, 32 bytes total.
 # 35-66	Sender Name, 32 bytes total.
 # 67+	Message. Length was specified earlier.
-def receive_MESSAGE(soc):
+def OLD_receive_MESSAGE(soc):
     logging.debug('Enter receive_MESSAGE...')
     length = soc.recv(2, socket.MSG_WAITALL)
     length = struct.unpack('<H', length)[0]
@@ -30,7 +30,28 @@ def receive_MESSAGE(soc):
     logging.debug(f"Message: {message}")
     return recipient, sender, message
 
-def send_MESSAGE(soc, recipient, sender, message):
+async def receive_MESSAGE(reader):
+    length = await reader.readexactly(2)
+    length = struct.unpack('<H', length)[0]
+    recipient = await reader.readexactly(32).decode('ascii').rstrip('\x00')
+    sender = await reader.readexactly(32).decode('ascii').rstrip('\x00')
+    message = await reader.readexactly(length).decode('ascii').rstrip('\x00')
+    logging.debug(f"Recipient: {recipient}")
+    logging.debug(f"Sender: {sender}")
+    logging.debug(f"Message length: {length}")
+    logging.debug(f"Message: {message}")
+    return recipient, sender, message
+
+async def send_MESSAGE(writer, recipient, sender, message):
+    length_bytes = struct.pack('<H', len(message))
+    recipient_bytes = bytes(recipient, 'ascii')[:31].ljust(32, bytes(1))
+    sender_bytes = bytes(sender, 'ascii')[:31].ljust(32, bytes(1))
+    message_bytes = bytes(message, 'ascii')
+    packet = LurkType.MESSAGE + length_bytes + recipient_bytes + sender_bytes + message_bytes
+    writer.write(packet)
+    await writer.drain()
+
+def OLD_send_MESSAGE(soc, recipient, sender, message):
     logging.debug('Enter send_MESSAGE...')
     length_bytes = struct.pack('<H', len(message))
     recipient_bytes = bytes(recipient, 'ascii')[:31].ljust(32, bytes(1))

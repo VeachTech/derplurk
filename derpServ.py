@@ -6,9 +6,8 @@ import derplib.net as dnet
 from derplib.lurktype import LurkType
 from derplib.character import Character
 from derplib.errors import CharacterInUse, InvalidCharacter
-from handlers import *
 
-SERVER_ADDRESS = ('localhost', 10_000)
+SERVER_ADDRESS = ('0.0.0.0', 10_000)
 
 logging.basicConfig(
     level=logging.DEBUG,
@@ -35,7 +34,7 @@ async def client_connection(reader, writer):
     try:
         data = await reader.readexactly(1)
         if data == LurkType.CHARACTER:
-            character_name = await handle_CHARACTER(reader, writer, derp)
+            character_name = await handle_CHARACTER(reader, writer)
         else:
             await dnet.send_ERROR(writer, 5, 'Sent message before character message... Disconnecting')
             writer.close()
@@ -74,15 +73,60 @@ async def client_connection(reader, writer):
         elif data == LurkType.ROOM:
             pass
         elif data == LurkType.LEAVE:
-            pass
+            await dnet.send_ACCEPT(writer, LurkType.LEAVE)
+            break   # break out of while loop and disconnect character from game
         elif data == LurkType.CHARACTER:
             await dnet.send_ERROR(writer, 0, 'Character already selected')
         else:
             await dnet.send_ERROR(writer, 0, 'Invalid Type sent')
 
-    #TODO clean up connection, remove it from active list in game
+    #TODO clean up connection, remove it from active list in game, VERIFY
+    derp.disconnect_character(character_name)
+    #Does this auto cleanup sockets by just ending?
 
 
+async def handle_CHARACTER(reader, writer):
+    c = Character()
+    await c.receive(reader)
+    try:
+        c = derp.initialize_character(c, writer)
+    except CharacterInUse as err:
+        await dnet.send_ERROR(writer, 2, f'Player "{err.name}" is already in use... Terminating')
+        raise err
+    except InvalidCharacter as err:
+        await dnet.send_ERROR(writer, 4, f'{err.name}: {err.message}')
+        raise err
+    return c.name
+
+async def handle_MESSAGE(reader, writer, name):
+    recipient, sender, message = await dnet.receive_MESSAGE(reader)
+    recipient_writer = derp.get_character_writer(recipient)
+    if recipient_writer == None:
+        await dnet.send_ERROR(writer, 6, 'Recipient does not exist or is not connected')
+    else:
+        await dnet.send_MESSAGE(recipient_writer, recipient, sender, message)
+        await dnet.send_ACCEPT(LurkType.MESSAGE)
+
+async def handle_CHANGE_ROOM():
+    pass
+
+async def handle_FIGHT():
+    pass
+
+async def handle_PVPFIGHT():
+    pass
+
+async def handle_LOOT():
+    pass
+
+async def handle_START():
+    pass
+
+async def handle_ROOM():
+    pass
+
+async def handle_LEAVE():
+    pass
 
 
 if __name__ == '__main__':
@@ -99,4 +143,4 @@ if __name__ == '__main__':
         server.close()
         event_loop.run_until_complete(server.wait_closed())
         log.debug('closing event loop')
-        event_loop.close()
+        event_loop.close()import asyncio

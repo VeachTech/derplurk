@@ -48,3 +48,12 @@ class derp_game():
         else:
             raise InvalidCharacter(c.name, 'Stats are over initial point limit')
 
+    def disconnect_character(self, name):
+        c = self.characters[name][0]
+        self.characters[name] = (c, None) # remove writer connection
+
+    def get_character_writer(self, name):
+        if name in self.characters:
+            return self.characters[name][1]
+        else:
+            return None
