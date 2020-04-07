@@ -33,14 +33,25 @@ def OLD_receive_MESSAGE(soc):
 async def receive_MESSAGE(reader):
     length = await reader.readexactly(2)
     length = struct.unpack('<H', length)[0]
-    recipient = await reader.readexactly(32).decode('ascii').rstrip('\x00')
-    sender = await reader.readexactly(32).decode('ascii').rstrip('\x00')
-    message = await reader.readexactly(length).decode('ascii').rstrip('\x00')
+    recipient = await reader.readexactly(32)
+    recipient = recipient.decode('ascii').rstrip('\x00')
+    sender = await reader.readexactly(32)
+    sender = sender.decode('ascii').rstrip('\x00')
+    message = await reader.readexactly(length)
+    message = message.decode('ascii').rstrip('\x00')
     logging.debug(f"Recipient: {recipient}")
     logging.debug(f"Sender: {sender}")
     logging.debug(f"Message length: {length}")
     logging.debug(f"Message: {message}")
     return recipient, sender, message
+
+def pack_MESSAGE(recipient, sender, message):
+    length_bytes = struct.pack('<H', len(message))
+    recipient_bytes = bytes(recipient, 'ascii')[:31].ljust(32, bytes(1))
+    sender_bytes = bytes(sender, 'ascii')[:31].ljust(32, bytes(1))
+    message_bytes = bytes(message, 'ascii')
+    packet = LurkType.MESSAGE + length_bytes + recipient_bytes + sender_bytes + message_bytes
+    return packet
 
 async def send_MESSAGE(writer, recipient, sender, message):
     length_bytes = struct.pack('<H', len(message))
@@ -87,6 +98,11 @@ async def serv_send_MESSAGE(writer, recipient, sender, message):
 # Byte	Meaning
 # 0	Type, 2
 # 1-2	Number of the room to change to. The server will send an error if an inappropriate choice is made.
+
+async def receive_CHANGE_ROOM(reader):
+    number_bytes = await reader.readexactly(2)
+    number = struct.unpack('<H', number_bytes)[0]
+    return number
 
 def send_CHANGE_ROOM(soc, room):
     logging.debug('Enter send_CHANGE_ROOM...')
@@ -255,13 +271,14 @@ def receive_ROOM(soc):
 # Ready	Character is ready to start the game (1 = started, 0 = not started
 # When a client uses CHARACTER to describe a new player, the server may (should) ignore the client's initial specification for health, gold, and room. The monster flag is used when describing monsters found in the game rather than other human players.
 
-def receive_CHARACTER(soc):
-    character = Character()
-    character.receive(soc)
-    return character
+## DO NOT USE, USE CHARACTER CLASS INSTEAD
+# def receive_CHARACTER(soc):
+#     character = Character()
+#     character.receive(soc)
+#     return character
 
-def send_CHARACTER(soc, char):
-    char.send(soc)
+# def send_CHARACTER(soc, char):
+#     char.send(soc)
 
 # GAME
 # Used by the server to describe the game. The initial points is a combination of health, defense, and regen, and cannot be exceeded by the client when defining a new character. The stat limit is a hard limit for the combination for any player on the server regardless of experience. If unused, it should be set to 65535, the limit of the unsigned 16-bit integer. This message will be sent upon connecting to the server, and not re-sent.

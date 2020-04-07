@@ -69,6 +69,7 @@ class Character():
     stats = Stats()
     current_room = 0
     description = ''
+    writer = None
 
     async def receive(self, reader):
         name_bytes = await reader.readexactly(32)
@@ -119,5 +120,6 @@ class Character():
         packet = LurkType.CHARACTER + name_bytes + flag_byte + stat_bytes + room_bytes + desc_length_bytes + description_bytes
         return packet
 
-    def send(self, soc):
-        soc.sendall(self.pack())
+    async def send(self, writer):
+        writer.write(self.pack())
+        await writer.drain()
