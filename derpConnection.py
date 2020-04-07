@@ -71,7 +71,7 @@ async def client_connection(reader, writer):
             elif data == LurkType.CHANGE_ROOM:
                 await handle_CHANGE_ROOM(reader, writer, character_name)
             elif data == LurkType.FIGHT:
-                pass
+                await handle_FIGHT(writer, character_name)
             elif data == LurkType.PVPFIGHT:
                 pass
             elif data == LurkType.LOOT:
@@ -132,8 +132,14 @@ async def handle_CHANGE_ROOM(reader, writer, name):
     else:
         await dnet.send_ERROR(writer, 1, f"Can't change to room: {room_number}")
 
-async def handle_FIGHT():
-    pass
+async def handle_FIGHT(writer, name):
+    result = await derp.fight(name)
+    if result == "Dead":
+        await.send_ERROR(writer, 0, "Can't perform action, you are DEAD")
+    elif result == "nofight":
+        await.send_ERROR(writer, 7, "Can't perform action, no monsters")
+    else:
+        await dnet.send_ACCEPT(writer, LurkType.FIGHT)
 
 async def handle_PVPFIGHT():
     pass

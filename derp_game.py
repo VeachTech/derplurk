@@ -126,6 +126,14 @@ class derp_game():
         result = await room.leave_room(name, number)
         return result
 
+    async def fight(self, name):
+        c = self.characters[name]
+        if c.stats.health <= 0:
+            return "Dead"
+        room = self.rooms[c.current_room]
+        result = await room.fight(name)
+        return result
+
     # async def broadcast_character_update(self, name):
     #     """update everyone in the same room as name"""
     #     c,w = self.characters[name]

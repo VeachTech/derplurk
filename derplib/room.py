@@ -36,9 +36,10 @@ class Room():
         #DONE add character name to list
         self.characters.append(name)
 
-    #TODO not informing others of left player
+    #TODO not informing others of left player, Uh, might be my client
     async def leave_room(self, name, number):
         if number in self.connections:
+            #TODO: Apply characters regen
             #DONE change room number of character
             char = self.game.characters[name]
             char.current_room = number
