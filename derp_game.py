@@ -5,7 +5,7 @@ import derplib.game as libgame
 from derplib.errors import CharacterInUse, InvalidCharacter
 from derplib.character import Character, Character_Flags
 import derplib.net as dnet
-from derplib import room
+from derplib.room import Room
 from derplib.lurktype import LurkType
 
 log = logging.getLogger('game')
@@ -16,23 +16,26 @@ class derp_game():
     game.initial_points = 100
     game.description = 'Welcome to DerpLurk, feel free to derp around.'
     # key: Character name
-    # value: (character object, associated streams if connected)
+    # value: character
     characters = {}
     # list of rooms in the game
     rooms = {}
-    # list of monsters
-    monsters = {}
 
     def __init__(self):
-        self.rooms[0] = room.Room(self, 'main room', 0, 'game lobby', [1], [])
-        self.rooms[1] = room.Room(self, 'second room', 1, 'another room', [0], [])
+        self.rooms[0] = Room(self, 'main room', 0, 'game lobby', [1], [])
+        self.rooms[1] = Room(self, 'second room', 1, 'another room', [0], [])
 
-    # is this needed now?
-    # async def update_character(self, name, data):
-    #     c, w = self.characters[name]
-    #     if w != None:
-    #         w.write(data)
-    #         await w.drain()
+        monster1 = Character()
+        monster1.name = "Bad guy"
+        monster1.description = "a really bad guy"
+        monster1.current_room = 1
+        monster1.flags = Character_Flags.ALIVE & Character_Flags.READY & Character_Flags.STARTED & Character_Flags.MONSTER
+        monster1.send.attack = 20
+        monster1.send.defense = 20
+        monster1.send.regen = 20
+        monster1.send.health = 20
+        monster1.send.gold = 100
+        self.rooms[1].characters.append(monster1.name)
 
     #TODO modify character to be alive when found
     async def initialize_character(self, character, writer):
@@ -41,7 +44,6 @@ class derp_game():
             char = self.characters[name]
             if char.writer == None:
                 char.writer = writer
-                char.flags |= Character_Flags.ALIVE
                 log.debug(f'found character: {name}')
                 await dnet.send_ACCEPT(writer, LurkType.CHARACTER)
                 update = self.rooms[char.current_room].full_update_for_player_pack()
@@ -70,6 +72,7 @@ class derp_game():
             #new character should be alive and optionally join battle
             newflags = Character_Flags.ALIVE
             newflags |= c.flags & Character_Flags.JOIN_BATTLE
+            newflags |= Character_Flags.READY
             c.flags = newflags
             return c
         else:
@@ -78,7 +81,7 @@ class derp_game():
     def disconnect_character(self, name):
         c = self.characters[name]
         c.writer = None # remove writer connection
-        c.flags &= ~Character_Flags.ALIVE
+        # c.flags &= ~Character_Flags.ALIVE # Character does not die when leaving
 
     def get_character_writer(self, name):
         if name in self.characters:
@@ -118,7 +121,6 @@ class derp_game():
     async def start_character(self, name):
         c = self.characters[name]
         c.flags |= Character_Flags.STARTED
-        c.flags |= Character_Flags.READY
         asyncio.create_task(self.rooms[c.current_room].update_all_characters())
 
     async def change_room(self, name, number):
@@ -128,11 +130,15 @@ class derp_game():
 
     async def fight(self, name):
         c = self.characters[name]
-        if c.stats.health <= 0:
-            return "Dead"
+        if c.flags & Character_Flags.ALIVE == 0:
+            return "DEAD"
         room = self.rooms[c.current_room]
         result = await room.fight(name)
         return result
+
+    async def loot(self, name, target):
+        code = await self.rooms[self.characters[name].current_room].loot(name, target)
+        return code
 
     # async def broadcast_character_update(self, name):
     #     """update everyone in the same room as name"""

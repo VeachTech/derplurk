@@ -5,6 +5,7 @@ import struct
 from .lurktype import LurkType
 import derp_game
 import derplib.net as dnet
+from derplib.character import Character_Flags
 
 class Room():
     
@@ -29,6 +30,10 @@ class Room():
         #DONE send character room info + characters info
         room_data = self.get_rooms_info()
         char = self.game.characters[name]
+        # apply regen health
+        char.stats.health += char.stats.regen
+        if char.stats.health > 100:
+            char.stats.health = 100
         char.writer.write(room_data + existing_character_data)
         #DONE update whole room of new character
         asyncio.create_task(char.writer.drain())
@@ -38,10 +43,13 @@ class Room():
 
     #TODO not informing others of left player, Uh, might be my client
     async def leave_room(self, name, number):
+        char = self.game.characters[name]
+        if char.flags & Character_Flags.ALIVE == 0:
+            return "DEAD"
+
         if number in self.connections:
             #TODO: Apply characters regen
             #DONE change room number of character
-            char = self.game.characters[name]
             char.current_room = number
             #DONE remove character from list
             self.characters.remove(name)
@@ -55,11 +63,75 @@ class Room():
 
     async def fight(self, name):
         #TODO get players with join battle + named character
+        players = [self.game.characters[name]]
+        monsters = []
+        for char in self.characters:
+            if char == name:
+                continue
+            c = self.game.characters[char]
+            if c & Character_Flags.JOIN_BATTLE and c & Character_Flags.ALIVE:
+                if c & Character_Flags.MONSTER:
+                    monsters.append(c)
+                else:
+                    players.append(c)
+        if not monsters:
+            return "nofight"
+        
         #TODO fight clalculations
+        players_attack = 0
+        monsters_attack = 0
+        awarded_gold = 0
+        for player in players:
+            players_attack += player.stats.attack
+        
+        #attack monsters
+        for monster in monsters:
+            damage = players_attack - monster.stats.defense
+            if damage > 0:
+                monster.stats.health -= damage
+                if monster.stats.health <= 0:
+                    monster.flags &= ~Character_Flags.ALIVE # Set to DEAD
+                    awarded_gold += 50
+        
+        # get remaining monster damage
+        for monster in monsters:
+            if monster.flags & Character_Flags.ALIVE:
+                monsters_attack += monster.stats.attack
+        
+        # deal damage to players and give gold regardless of death
+        for player in players:
+            player.stats.gold += awarded_gold
+            damage = monsters_attack - player.stats.defense
+            if damage > 0:
+                player.stats.health -= damage
+                if player.stats.health <= 0:
+                    player.flags &= ~Character_Flags.ALIVE
+        
         #TODO update all characters of new stats
-        pass
+        await self.update_all_characters()
+        return "Success"
+
+    async def loot(self, recipient, target):
+        if target in self.characters:
+            target_char = self.game.characters[target]
+            recipient_char = self.game.characters[recipient]
+
+            if target_char.flags & Character_Flags.ALIVE:
+                return "Target Alive"
+            else:
+                recipient_char.stats.gold += target_char.stats.gold
+                target_char.stats.gold = 0
+                self.update_one_character(recipient)
+                self.update_one_character(target)
+                return "Looted"
+        else:
+            return "No Target"
 
     async def send_message(self, recipient, sender, message):
+        char = self.game.characters[sender]
+        if char.flags & Character_Flags.ALIVE == 0:
+            return "DEAD"
+        
         if recipient in self.characters:
             r = self.game.characters[recipient]
             data = dnet.pack_MESSAGE(recipient, sender, message)

@@ -135,6 +135,11 @@ def send_FIGHT(soc):
 # 0	Type, 4
 # 1-32	Name of target player
 
+async def receive_PVPFIGHT(reader):
+    data = reader.readexactly(32)
+    name = data.decode('ascii').rstrip('\x00')
+    return name
+
 def send_PVPFIGHT(soc, target):
     logging.debug('Enter send_PVPFIGHT...')
     target_bytes = bytes(target, 'ascii')[:31].ljust(32, bytes(1))
@@ -152,6 +157,11 @@ def send_PVPFIGHT(soc, target):
 # Byte	Meaning
 # 0	Type, 5
 # 1-32	Name of target player
+
+async def receive_LOOT(reader):
+    data = reader.readexactly(32)
+    name = data.decode('ascii').rstrip('\x00')
+    return name
 
 def send_LOOT(soc, target):
     logging.debug('Enter send_LOOT...')
@@ -240,11 +250,11 @@ async def send_ACCEPT(writer, accept_type):
 # 35-36	Room description length
 # 37+	Room description. This can be shown to the player.
 
-def receive_ROOM(soc):
-    room = Room()
-    room.receive(soc)
+# def receive_ROOM(soc):
+#     room = Room()
+#     room.receive(soc)
 
-    return room
+#     return room
 
 
 # CHARACTER
@@ -316,10 +326,10 @@ def send_LEAVE(soc):
 # 3-34	Room name, 32 bytes in length
 # 35-36	Room description length
 # 37+	Room description. This can be shown to the player.
-def receive_CONNECTION(soc):
-    connection = Room()
-    connection.receive(soc)
-    return connection
+# def receive_CONNECTION(soc):
+#     connection = Room()
+#     connection.receive(soc)
+#     return connection
 
 
 # VERSION

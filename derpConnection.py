@@ -73,9 +73,9 @@ async def client_connection(reader, writer):
             elif data == LurkType.FIGHT:
                 await handle_FIGHT(writer, character_name)
             elif data == LurkType.PVPFIGHT:
-                pass
+                await handle_PVPFIGHT(reader, writer, character_name)
             elif data == LurkType.LOOT:
-                pass
+                await handle_LOOT(reader, writer, character_name)
             elif data == LurkType.START:
                 await handle_START(writer, character_name)
             elif data == LurkType.LEAVE:
@@ -119,7 +119,9 @@ async def handle_MESSAGE(reader, writer, name):
     recipient, sender, message = await dnet.receive_MESSAGE(reader)
     # ignore sender name, we already know who actually sent it
     code = await derp.send_message(recipient, name, message)
-    if code == "Success":
+    if code == "DEAD":
+        await dnet.send_ERROR(writer, 0, "Can't perform action, you are DEAD")
+    elif code == "Success":
         await dnet.send_ACCEPT(writer, LurkType.MESSAGE)
     else:
         await dnet.send_ERROR(writer, 6, 'Cannot send message')
@@ -127,25 +129,35 @@ async def handle_MESSAGE(reader, writer, name):
 async def handle_CHANGE_ROOM(reader, writer, name):
     room_number = await dnet.receive_CHANGE_ROOM(reader)
     result = await derp.change_room(name, room_number)
-    if result == "Success":
+    if result == "DEAD":
+        await dnet.send_ERROR(writer, 0, "Can't perform action, you are DEAD")
+    elif result == "Success":
         await dnet.send_ACCEPT(writer, LurkType.CHANGE_ROOM)
     else:
         await dnet.send_ERROR(writer, 1, f"Can't change to room: {room_number}")
 
 async def handle_FIGHT(writer, name):
     result = await derp.fight(name)
-    if result == "Dead":
-        await.send_ERROR(writer, 0, "Can't perform action, you are DEAD")
+    if result == "DEAD":
+        await dnet.send_ERROR(writer, 0, "Can't perform action, you are DEAD")
     elif result == "nofight":
-        await.send_ERROR(writer, 7, "Can't perform action, no monsters")
+        await dnet.send_ERROR(writer, 7, "Can't perform action, no monsters")
     else:
         await dnet.send_ACCEPT(writer, LurkType.FIGHT)
 
-async def handle_PVPFIGHT():
-    pass
+async def handle_PVPFIGHT(reader, writer, name):
+    name = await dnet.receive_PVPFIGHT(reader)
+    await dnet.send_ERROR(writer, 8, "No PVP in this server")
 
-async def handle_LOOT():
-    pass
+async def handle_LOOT(reader, writer, name):
+    target = await dnet.receive_LOOT(reader)
+    code = await derp.loot(name, target)
+    if code == "No Target":
+        await dnet.send_ERROR(writer, 6, "No target")
+    elif code == "Target Alive":
+        await dnet.send_ERROR(writer, 0, "Target is alive")
+    else:
+        await dnet.send_ACCEPT(writer, LurkType.LOOT)
 
 async def handle_START(writer, name):
     await derp.start_character(name)

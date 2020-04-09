@@ -2,5 +2,6 @@ Character stats change when connecting to server
 They change to the character sent rather than what's in the game
 ? Issue with my client ?
 
-
-make sure to send Accept on successful message
+Read = character is valid
+Started = character can play
+Alive = character is not dead :)
