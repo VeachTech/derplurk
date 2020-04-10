@@ -47,7 +47,7 @@ async def receive_MESSAGE(reader):
 
 def pack_MESSAGE(recipient, sender, message):
     length_bytes = struct.pack('<H', len(message))
-    recipient_bytes = bytes(recipient, 'utf-8)[:31].ljust(32, bytes(1))
+    recipient_bytes = bytes(recipient, 'utf-8')[:31].ljust(32, bytes(1))
     sender_bytes = bytes(sender, 'utf-8')[:31].ljust(32, bytes(1))
     message_bytes = bytes(message, 'utf-8')
     packet = LurkType.MESSAGE + length_bytes + recipient_bytes + sender_bytes + message_bytes
