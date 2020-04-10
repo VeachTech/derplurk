@@ -87,28 +87,23 @@ async def client_connection(reader, writer):
                     await dnet.send_ERROR(writer, 0, 'Character already selected')
                 else:
                     try:
-            data = await reader.readexactly(1)
-            if data == LurkType.CHARACTER:
-                character_name = await handle_CHARACTER(reader, writer)
-            else:
-                await dnet.send_ERROR(writer, 5, 'Sent message before character message... Disconnecting')
-                continue
+                        character_name = await handle_CHARACTER(reader, writer)
 
-                except InvalidCharacter:
+                    except InvalidCharacter:
+                        continue
+                    except asyncio.IncompleteReadError:
+                        writer.close()
+                        return
+                    except:
+                        writer.close()
+                        return
+            else:
+                await dnet.send_ERROR(writer, 0, 'Invalid Type sent')
+                num_errors += 1
+                if num_errors >= 5:
+                    break
+                else:
                     continue
-                except asyncio.IncompleteReadError:
-                    writer.close()
-                    return
-                except:
-                    writer.close()
-                    return
-                    else:
-                        await dnet.send_ERROR(writer, 0, 'Invalid Type sent')
-                        num_errors += 1
-                        if num_errors >= 5:
-                            break
-                        else:
-                            continue
 
             # if we have reached here, there was a successful message
             num_errors = 0
