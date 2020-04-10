@@ -21,9 +21,9 @@ def OLD_receive_MESSAGE(soc):
     logging.debug('Enter receive_MESSAGE...')
     length = soc.recv(2, socket.MSG_WAITALL)
     length = struct.unpack('<H', length)[0]
-    recipient = soc.recv(32, socket.MSG_WAITALL).decode('ascii').rstrip('\x00')
-    sender = soc.recv(32, socket.MSG_WAITALL).decode('ascii').rstrip('\x00')
-    message = soc.recv(length, socket.MSG_WAITALL).decode('ascii').rstrip('\x00')
+    recipient = soc.recv(32, socket.MSG_WAITALL).decode('utf-8').rstrip('\x00')
+    sender = soc.recv(32, socket.MSG_WAITALL).decode('utf-8').rstrip('\x00')
+    message = soc.recv(length, socket.MSG_WAITALL).decode('utf-8').rstrip('\x00')
     logging.debug(f"Recipient: {recipient}")
     logging.debug(f"Sender: {sender}")
     logging.debug(f"Message length: {length}")
@@ -34,11 +34,11 @@ async def receive_MESSAGE(reader):
     length = await reader.readexactly(2)
     length = struct.unpack('<H', length)[0]
     recipient = await reader.readexactly(32)
-    recipient = recipient.decode('ascii').rstrip('\x00')
+    recipient = recipient.decode('utf-8').rstrip('\x00')
     sender = await reader.readexactly(32)
-    sender = sender.decode('ascii').rstrip('\x00')
+    sender = sender.decode('utf-8').rstrip('\x00')
     message = await reader.readexactly(length)
-    message = message.decode('ascii').rstrip('\x00')
+    message = message.decode('utf-8').rstrip('\x00')
     logging.debug(f"Recipient: {recipient}")
     logging.debug(f"Sender: {sender}")
     logging.debug(f"Message length: {length}")
@@ -47,17 +47,17 @@ async def receive_MESSAGE(reader):
 
 def pack_MESSAGE(recipient, sender, message):
     length_bytes = struct.pack('<H', len(message))
-    recipient_bytes = bytes(recipient, 'ascii')[:31].ljust(32, bytes(1))
-    sender_bytes = bytes(sender, 'ascii')[:31].ljust(32, bytes(1))
-    message_bytes = bytes(message, 'ascii')
+    recipient_bytes = bytes(recipient, 'utf-8)[:31].ljust(32, bytes(1))
+    sender_bytes = bytes(sender, 'utf-8')[:31].ljust(32, bytes(1))
+    message_bytes = bytes(message, 'utf-8')
     packet = LurkType.MESSAGE + length_bytes + recipient_bytes + sender_bytes + message_bytes
     return packet
 
 async def send_MESSAGE(writer, recipient, sender, message):
     length_bytes = struct.pack('<H', len(message))
-    recipient_bytes = bytes(recipient, 'ascii')[:31].ljust(32, bytes(1))
-    sender_bytes = bytes(sender, 'ascii')[:31].ljust(32, bytes(1))
-    message_bytes = bytes(message, 'ascii')
+    recipient_bytes = bytes(recipient, 'utf-8')[:31].ljust(32, bytes(1))
+    sender_bytes = bytes(sender, 'utf-8')[:31].ljust(32, bytes(1))
+    message_bytes = bytes(message, 'utf-8')
     packet = LurkType.MESSAGE + length_bytes + recipient_bytes + sender_bytes + message_bytes
     writer.write(packet)
     await writer.drain()
@@ -65,9 +65,9 @@ async def send_MESSAGE(writer, recipient, sender, message):
 def OLD_send_MESSAGE(soc, recipient, sender, message):
     logging.debug('Enter send_MESSAGE...')
     length_bytes = struct.pack('<H', len(message))
-    recipient_bytes = bytes(recipient, 'ascii')[:31].ljust(32, bytes(1))
-    sender_bytes = bytes(sender, 'ascii')[:31].ljust(32, bytes(1))
-    message_bytes = bytes(message, 'ascii')
+    recipient_bytes = bytes(recipient, 'utf-8')[:31].ljust(32, bytes(1))
+    sender_bytes = bytes(sender, 'utf-8')[:31].ljust(32, bytes(1))
+    message_bytes = bytes(message, 'utf-8')
     packet = LurkType.MESSAGE + length_bytes + recipient_bytes + sender_bytes + message_bytes
     
     logging.debug(f'Send Message: {LurkType.MESSAGE}')
@@ -84,9 +84,9 @@ def OLD_send_MESSAGE(soc, recipient, sender, message):
 async def serv_send_MESSAGE(writer, recipient, sender, message):
     logging.debug(f'{sender} sending to {recipient}: {message}')
     length_bytes = struct.pack('<H', len(message))
-    recipient_bytes = bytes(recipient, 'ascii')[:31].ljust(32, bytes(1))
-    sender_bytes = bytes(sender, 'ascii')[:31].ljust(32, bytes(1))
-    message_bytes = bytes(message, 'ascii')
+    recipient_bytes = bytes(recipient, 'utf-8')[:31].ljust(32, bytes(1))
+    sender_bytes = bytes(sender, 'utf-8')[:31].ljust(32, bytes(1))
+    message_bytes = bytes(message, 'utf-8')
     packet = LurkType.MESSAGE + length_bytes + recipient_bytes + sender_bytes + message_bytes
     writer.write(packet)
     await writer.drain()
@@ -137,12 +137,12 @@ def send_FIGHT(soc):
 
 async def receive_PVPFIGHT(reader):
     data = reader.readexactly(32)
-    name = data.decode('ascii').rstrip('\x00')
+    name = data.decode('utf-8').rstrip('\x00')
     return name
 
 def send_PVPFIGHT(soc, target):
     logging.debug('Enter send_PVPFIGHT...')
-    target_bytes = bytes(target, 'ascii')[:31].ljust(32, bytes(1))
+    target_bytes = bytes(target, 'utf-8')[:31].ljust(32, bytes(1))
     packet = LurkType.PVPFIGHT + target_bytes
 
     logging.debug(f'Send PVPFIGHT: {LurkType.PVPFIGHT}')
@@ -160,12 +160,12 @@ def send_PVPFIGHT(soc, target):
 
 async def receive_LOOT(reader):
     data = reader.readexactly(32)
-    name = data.decode('ascii').rstrip('\x00')
+    name = data.decode('utf-8').rstrip('\x00')
     return name
 
 def send_LOOT(soc, target):
     logging.debug('Enter send_LOOT...')
-    target_bytes = bytes(target, 'ascii')[:31].ljust(32, bytes(1))
+    target_bytes = bytes(target, 'utf-8')[:31].ljust(32, bytes(1))
     packet = LurkType.LOOT + target_bytes
     
     logging.debug(f'Send LOOT: {LurkType.LOOT}')
@@ -213,7 +213,7 @@ def receive_ERROR(soc):
     logging.debug(f'Received error code {error_code}')
     msg_length_bytes = soc.recv(2, socket.MSG_WAITALL)
     msg_length = struct.unpack('<H', msg_length_bytes)[0]
-    message = soc.recv(msg_length, socket.MSG_WAITALL).decode('ascii').rstrip('\x00')
+    message = soc.recv(msg_length, socket.MSG_WAITALL).decode('utf-8').rstrip('\x00')
 
     logging.debug(f'Message Length bytes: {msg_length_bytes}, Length: {msg_length}')
     logging.warning(f'Received _{error_code}_ error code: {message}')
@@ -222,7 +222,7 @@ def receive_ERROR(soc):
 async def send_ERROR(writer, code, msg):
     code_bytes = struct.pack('<B', code)
     msg_length_bytes = struct.pack('<H', len(msg))
-    msg_bytes = bytes(msg, 'ascii')
+    msg_bytes = bytes(msg, 'utf-8')
     packet = LurkType.ERROR + code_bytes + msg_length_bytes + msg_bytes
     writer.write(packet)
     await writer.drain()
