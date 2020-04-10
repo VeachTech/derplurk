@@ -43,7 +43,7 @@ async def client_connection(reader, writer):
         except InvalidCharacter:
             continue
         except asyncio.IncompleteReadError:
-            #maybe log?
+            writer.close()
             return
         except:
             writer.close()
