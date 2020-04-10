@@ -113,6 +113,7 @@ async def client_connection(reader, writer):
             derp.disconnect_character(character_name)
             log.debug(f'Character "{character_name}" disconnected, closing connection')
         writer.close()
+        log.debug('Connection closed')
         
 
 async def handle_CHARACTER(reader, writer):
@@ -207,7 +208,7 @@ if __name__ == '__main__':
         exit()
     #server.connect((sys.argv[1], int(sys.argv[2])))
     #factory = asyncio.start_server(client_connection, *SERVER_ADDRESS)
-    factory = asyncio.start_server(client_connection, sys.argv[1], int(sys.argv[2]))
+    factory = asyncio.start_server(client_connection, sys.argv[1], int(sys.argv[2]), limit=2**17)
     server = event_loop.run_until_complete(factory)
     log.debug('starting up on {} port {}'.format(sys.argv[1], int(sys.argv[2])))
 
