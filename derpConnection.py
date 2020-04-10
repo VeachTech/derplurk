@@ -112,6 +112,7 @@ async def client_connection(reader, writer):
         if character_name != '':
             derp.disconnect_character(character_name)
             log.debug(f'Character "{character_name}" disconnected, closing connection')
+        writer.close()
         
 
 async def handle_CHARACTER(reader, writer):
