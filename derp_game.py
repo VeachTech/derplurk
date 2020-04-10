@@ -80,7 +80,7 @@ class derp_game():
             valid_character.writer = writer
             self.characters[name] = valid_character
             await dnet.send_ACCEPT(writer, LurkType.CHARACTER)
-            await self.rooms[valid_character.current_room].enter_room(valid_character.name)
+            # await self.rooms[valid_character.current_room].enter_room(valid_character.name)
             log.debug(f'created character: {name}: {valid_character}')
             return valid_character
 
@@ -144,7 +144,8 @@ class derp_game():
     async def start_character(self, name):
         c = self.characters[name]
         c.flags |= Character_Flags.STARTED
-        asyncio.create_task(self.rooms[c.current_room].update_all_characters())
+        await self.rooms[c.current_room].enter_room(c.name)
+        # asyncio.create_task(self.rooms[c.current_room].update_all_characters())
 
     async def change_room(self, name, number):
         room = self.rooms[self.characters[name].current_room]
