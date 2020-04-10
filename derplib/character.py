@@ -110,9 +110,9 @@ class Character():
 
     def pack(self):
         name_bytes = bytes(self.name, 'ascii')[:31].ljust(32, bytes(1))
-        print(f'Name: {self.name}, bytes: {name_bytes}')
+        # print(f'Name: {self.name}, bytes: {name_bytes}')
         flag_byte = struct.pack('<B', self.flags)
-        print(f'Flags: {self.flags}, byte: {flag_byte}')
+        # print(f'Flags: {self.flags}, byte: {flag_byte}')
         stat_bytes = self.stats.pack()
         room_bytes = struct.pack('<H', self.current_room)
         desc_length_bytes = struct.pack('<H', len(self.description))

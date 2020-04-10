@@ -7,6 +7,7 @@ from derplib.character import Character, Character_Flags
 import derplib.net as dnet
 from derplib.room import Room
 from derplib.lurktype import LurkType
+import json
 
 log = logging.getLogger('game')
 
@@ -22,22 +23,57 @@ class derp_game():
     rooms = {}
 
     def __init__(self):
-        self.rooms[0] = Room(self, 'main room', 0, 'game lobby', [1], [])
-        self.rooms[1] = Room(self, 'second room', 1, 'another room', [0], [])
+        self.__load_data("data.json")
+        # self.rooms[0] = Room(self, 'main room', 0, 'game lobby', [1], [])
+        # self.rooms[1] = Room(self, 'second room', 1, 'another room', [0], [])
 
-        monster1 = Character()
-        monster1.name = "Bad guy"
-        monster1.description = "a really bad guy"
-        monster1.current_room = 1
-        monster1.flags = Character_Flags.ALIVE & Character_Flags.READY & Character_Flags.STARTED & Character_Flags.MONSTER
-        monster1.send.attack = 20
-        monster1.send.defense = 20
-        monster1.send.regen = 20
-        monster1.send.health = 20
-        monster1.send.gold = 100
-        self.rooms[1].characters.append(monster1.name)
+        # monster1 = Character()
+        # monster1.name = "Bad guy"
+        # monster1.description = "a really bad guy"
+        # monster1.current_room = 1
+        # monster1.flags = Character_Flags.ALIVE | Character_Flags.READY | Character_Flags.STARTED | Character_Flags.MONSTER
+        # monster1.stats.attack = 20
+        # monster1.stats.defense = 20
+        # monster1.stats.regen = 20
+        # monster1.stats.health = 20
+        # monster1.stats.gold = 100
+        # self.characters[monster1.name] = monster1
+        # self.rooms[1].characters.append(monster1.name)
 
-    #TODO modify character to be alive when found
+    def __load_data(self, file):
+        with open(file) as f:
+            data = json.load(f)
+
+        for room in data["Rooms"]:
+            number = room["number"]
+            name = room["name"]
+            description = room["description"]
+            connections = room["connections"]
+            self.rooms[number] = Room(self, name, number, description, connections, [])
+        
+        for monster in data["Monsters"]:
+            name = monster["name"]
+            description = monster["description"]
+            room = monster["room"]
+            attack = monster["attack"]
+            defense = monster["defense"]
+            regen = monster["regen"]
+            health = monster["health"]
+            gold = monster["gold"]
+
+            c = Character()
+            c.name = name
+            c.description = description
+            c.current_room = room
+            c.stats.attack = attack
+            c.stats.defense = defense
+            c.stats.regen = regen
+            c.stats.health = health
+            c.stats.gold = gold
+            c.flags = Character_Flags.ALIVE | Character_Flags.READY | Character_Flags.STARTED | Character_Flags.MONSTER
+            self.characters[name] = c
+            self.rooms[room].characters.append(name)
+
     async def initialize_character(self, character, writer):
         name = character.name
         if name in self.characters:
@@ -58,7 +94,7 @@ class derp_game():
             self.characters[name] = valid_character
             await dnet.send_ACCEPT(writer, LurkType.CHARACTER)
             await self.rooms[valid_character.current_room].enter_room(valid_character.name)
-            log.debug(f'created character: {name}')
+            log.debug(f'created character: {name}: {valid_character}')
             return valid_character
 
     def __validate_new_character(self, c):

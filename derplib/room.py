@@ -7,6 +7,8 @@ import derp_game
 import derplib.net as dnet
 from derplib.character import Character_Flags
 
+log = logging.getLogger('Room')
+
 class Room():
     
     game = None
@@ -32,14 +34,18 @@ class Room():
         char = self.game.characters[name]
         # apply regen health
         char.stats.health += char.stats.regen
+        log.debug(f'{char.name} entered room #{self.number}')
+
         if char.stats.health > 100:
             char.stats.health = 100
         char.writer.write(room_data + existing_character_data)
         #DONE update whole room of new character
         asyncio.create_task(char.writer.drain())
-        asyncio.create_task(self.update_one_character(name))
+        # asyncio.create_task(self.update_one_character(name))
         #DONE add character name to list
         self.characters.append(name)
+        await self.update_one_character(name)
+        
 
     #TODO not informing others of left player, Uh, might be my client
     async def leave_room(self, name, number):
@@ -48,34 +54,37 @@ class Room():
             return "DEAD"
 
         if number in self.connections:
-            #TODO: Apply characters regen
             #DONE change room number of character
             char.current_room = number
             #DONE remove character from list
             self.characters.remove(name)
             #DONE call enter room of appropiate room
-            asyncio.create_task(self.game.rooms[number].enter_room(name))
+            #asyncio.create_task(self.game.rooms[number].enter_room(name))
+            await self.game.rooms[number].enter_room(name)
             #DONE update other characters of character leaving
-            asyncio.create_task(self.update_one_character(name))
+            await self.update_one_character(name)
             return "Success"
         else:
             return "Invalid Room"
 
     async def fight(self, name):
         #TODO get players with join battle + named character
-        players = [self.game.characters[name]]
+        players = [self.game.characters[name],]
         monsters = []
         for char in self.characters:
-            if char == name:
-                continue
-            c = self.game.characters[char]
-            if c & Character_Flags.JOIN_BATTLE and c & Character_Flags.ALIVE:
-                if c & Character_Flags.MONSTER:
-                    monsters.append(c)
-                else:
-                    players.append(c)
+            if char != name:
+                c = self.game.characters[char]
+                if c.flags & Character_Flags.ALIVE:
+                    if c.flags & Character_Flags.MONSTER:
+                        monsters.append(c)
+                    elif c.flags & Character_Flags.JOIN_BATTLE:
+                        players.append(c)
         if not monsters:
             return "nofight"
+
+        log.debug('Players in battle:')
+        for player in players:
+            log.debug(f'{player.name},')
         
         #TODO fight clalculations
         players_attack = 0
@@ -91,6 +100,7 @@ class Room():
                 monster.stats.health -= damage
                 if monster.stats.health <= 0:
                     monster.flags &= ~Character_Flags.ALIVE # Set to DEAD
+                    log.debug(f'{monster.name} died')
                     awarded_gold += 50
         
         # get remaining monster damage
@@ -106,6 +116,7 @@ class Room():
                 player.stats.health -= damage
                 if player.stats.health <= 0:
                     player.flags &= ~Character_Flags.ALIVE
+                    log.debug(f'{player.name} died')
         
         #TODO update all characters of new stats
         await self.update_all_characters()
@@ -159,7 +170,7 @@ class Room():
                 w.write(data)
                 asyncio.create_task(w.drain())
 
-    async def full_update_for_player_pack(self):
+    def full_update_for_player_pack(self):
         data = self.get_rooms_info()
         data += self.get_all_characters_info()
         return data
