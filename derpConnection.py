@@ -30,23 +30,24 @@ async def client_connection(reader, writer):
     await dnet.send_VERSION(writer)
     await dnet.send_GAME(writer, derp.game)
 
-    # Initial receive, accept only character or send Error
-    try:
-        data = await reader.readexactly(1)
-        if data == LurkType.CHARACTER:
-            character_name = await handle_CHARACTER(reader, writer)
-        else:
-            await dnet.send_ERROR(writer, 5, 'Sent message before character message... Disconnecting')
+    while character_name == '':
+        # Initial receive, accept only character or send Error
+        try:
+            data = await reader.readexactly(1)
+            if data == LurkType.CHARACTER:
+                character_name = await handle_CHARACTER(reader, writer)
+            else:
+                await dnet.send_ERROR(writer, 5, 'Sent message before character message... Disconnecting')
+                continue
+
+        except InvalidCharacter:
+            continue
+        except asyncio.IncompleteReadError:
+            #maybe log?
+            return
+        except:
             writer.close()
             return
-
-    except asyncio.IncompleteReadError:
-        #maybe log?
-        return
-    except:
-        #character error, close socket and return
-        writer.close()
-        return
     
     #await dnet.send_ACCEPT(writer, LurkType.CHARACTER)
 
