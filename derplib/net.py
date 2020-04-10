@@ -33,16 +33,17 @@ def OLD_receive_MESSAGE(soc):
 async def receive_MESSAGE(reader):
     length = await reader.readexactly(2)
     length = struct.unpack('<H', length)[0]
+    logging.debug(f"Message length: {length}")
     recipient = await reader.readexactly(32)
     recipient = recipient.decode('utf-8').rstrip('\x00')
+    logging.debug(f"Recipient: {recipient}")
     sender = await reader.readexactly(32)
     sender = sender.decode('utf-8').rstrip('\x00')
+    logging.debug(f"Sender: {sender}")
     message = await reader.readexactly(length)
     message = message.decode('utf-8').rstrip('\x00')
-    logging.debug(f"Recipient: {recipient}")
-    logging.debug(f"Sender: {sender}")
-    logging.debug(f"Message length: {length}")
     logging.debug(f"Message: {message}")
+    
     return recipient, sender, message
 
 def pack_MESSAGE(recipient, sender, message):

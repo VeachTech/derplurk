@@ -30,24 +30,24 @@ async def client_connection(reader, writer):
     await dnet.send_VERSION(writer)
     await dnet.send_GAME(writer, derp.game)
 
-    while character_name == '':
-        # Initial receive, accept only character or send Error
-        try:
-            data = await reader.readexactly(1)
-            if data == LurkType.CHARACTER:
-                character_name = await handle_CHARACTER(reader, writer)
-            else:
-                await dnet.send_ERROR(writer, 5, 'Sent message before character message... Disconnecting')
-                continue
+    # while character_name == '':
+    #     # Initial receive, accept only character or send Error
+    #     try:
+    #         data = await reader.readexactly(1)
+    #         if data == LurkType.CHARACTER:
+    #             character_name = await handle_CHARACTER(reader, writer)
+    #         else:
+    #             await dnet.send_ERROR(writer, 5, 'Sent message before character message... Disconnecting')
+    #             continue
 
-        except InvalidCharacter:
-            continue
-        except asyncio.IncompleteReadError:
-            writer.close()
-            return
-        except:
-            writer.close()
-            return
+    #     except InvalidCharacter:
+    #         continue
+    #     except asyncio.IncompleteReadError:
+    #         writer.close()
+    #         return
+    #     except:
+    #         writer.close()
+    #         return
     
     #await dnet.send_ACCEPT(writer, LurkType.CHARACTER)
 
@@ -83,14 +83,32 @@ async def client_connection(reader, writer):
                 await dnet.send_ACCEPT(writer, LurkType.LEAVE)
                 break   # break out of while loop and disconnect character from game
             elif data == LurkType.CHARACTER:
-                await dnet.send_ERROR(writer, 0, 'Character already selected')
-            else:
-                await dnet.send_ERROR(writer, 0, 'Invalid Type sent')
-                num_errors += 1
-                if num_errors >= 5:
-                    break
+                if character_name != '':
+                    await dnet.send_ERROR(writer, 0, 'Character already selected')
                 else:
+                    try:
+            data = await reader.readexactly(1)
+            if data == LurkType.CHARACTER:
+                character_name = await handle_CHARACTER(reader, writer)
+            else:
+                await dnet.send_ERROR(writer, 5, 'Sent message before character message... Disconnecting')
+                continue
+
+                except InvalidCharacter:
                     continue
+                except asyncio.IncompleteReadError:
+                    writer.close()
+                    return
+                except:
+                    writer.close()
+                    return
+                    else:
+                        await dnet.send_ERROR(writer, 0, 'Invalid Type sent')
+                        num_errors += 1
+                        if num_errors >= 5:
+                            break
+                        else:
+                            continue
 
             # if we have reached here, there was a successful message
             num_errors = 0
@@ -117,6 +135,9 @@ async def handle_CHARACTER(reader, writer):
 
 #TODO Verify handle_MESSAGE
 async def handle_MESSAGE(reader, writer, name):
+    if name == '':
+        await dnet.send_ERROR(writer, 5, "Character not selected")
+        return
     recipient, sender, message = await dnet.receive_MESSAGE(reader)
     # ignore sender name, we already know who actually sent it
     code = await derp.send_message(recipient, name, message)
@@ -128,6 +149,9 @@ async def handle_MESSAGE(reader, writer, name):
         await dnet.send_ERROR(writer, 6, 'Cannot send message')
 
 async def handle_CHANGE_ROOM(reader, writer, name):
+    if name == '':
+        await dnet.send_ERROR(writer, 5, "Character not selected")
+        return
     room_number = await dnet.receive_CHANGE_ROOM(reader)
     result = await derp.change_room(name, room_number)
     if result == "DEAD":
@@ -138,6 +162,9 @@ async def handle_CHANGE_ROOM(reader, writer, name):
         await dnet.send_ERROR(writer, 1, f"Can't change to room: {room_number}")
 
 async def handle_FIGHT(writer, name):
+    if name == '':
+        await dnet.send_ERROR(writer, 5, "Character not selected")
+        return
     result = await derp.fight(name)
     if result == "DEAD":
         await dnet.send_ERROR(writer, 0, "Can't perform action, you are DEAD")
@@ -147,10 +174,16 @@ async def handle_FIGHT(writer, name):
         await dnet.send_ACCEPT(writer, LurkType.FIGHT)
 
 async def handle_PVPFIGHT(reader, writer, name):
+    if name == '':
+        await dnet.send_ERROR(writer, 5, "Character not selected")
+        return
     name = await dnet.receive_PVPFIGHT(reader)
     await dnet.send_ERROR(writer, 8, "No PVP in this server")
 
 async def handle_LOOT(reader, writer, name):
+    if name == '':
+        await dnet.send_ERROR(writer, 5, "Character not selected")
+        return
     target = await dnet.receive_LOOT(reader)
     code = await derp.loot(name, target)
     if code == "No Target":
@@ -161,6 +194,9 @@ async def handle_LOOT(reader, writer, name):
         await dnet.send_ACCEPT(writer, LurkType.LOOT)
 
 async def handle_START(writer, name):
+    if name == '':
+        await dnet.send_ERROR(writer, 5, "Character not selected")
+        return
     await derp.start_character(name)
     await dnet.send_ACCEPT(writer, LurkType.START)
 
