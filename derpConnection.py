@@ -168,9 +168,14 @@ async def handle_LEAVE():
 
 
 if __name__ == '__main__':
-    factory = asyncio.start_server(client_connection, *SERVER_ADDRESS)
+    if len(sys.argv) != 3:
+        print("Usage: client.py server port")
+        exit()
+    #server.connect((sys.argv[1], int(sys.argv[2])))
+    #factory = asyncio.start_server(client_connection, *SERVER_ADDRESS)
+    factory = asyncio.start_server(client_connection, sys.argv[1], int(sys.argv[2]))
     server = event_loop.run_until_complete(factory)
-    log.debug('starting up on {} port {}'.format(*SERVER_ADDRESS))
+    log.debug('starting up on {} port {}'.format(sys.argv[1], int(sys.argv[2])))
 
     try:
         event_loop.run_forever()

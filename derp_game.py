@@ -24,21 +24,7 @@ class derp_game():
 
     def __init__(self):
         self.__load_data("data.json")
-        # self.rooms[0] = Room(self, 'main room', 0, 'game lobby', [1], [])
-        # self.rooms[1] = Room(self, 'second room', 1, 'another room', [0], [])
 
-        # monster1 = Character()
-        # monster1.name = "Bad guy"
-        # monster1.description = "a really bad guy"
-        # monster1.current_room = 1
-        # monster1.flags = Character_Flags.ALIVE | Character_Flags.READY | Character_Flags.STARTED | Character_Flags.MONSTER
-        # monster1.stats.attack = 20
-        # monster1.stats.defense = 20
-        # monster1.stats.regen = 20
-        # monster1.stats.health = 20
-        # monster1.stats.gold = 100
-        # self.characters[monster1.name] = monster1
-        # self.rooms[1].characters.append(monster1.name)
 
     def __load_data(self, file):
         with open(file) as f:
@@ -71,6 +57,7 @@ class derp_game():
             c.stats.health = health
             c.stats.gold = gold
             c.flags = Character_Flags.ALIVE | Character_Flags.READY | Character_Flags.STARTED | Character_Flags.MONSTER
+            # c.writer = -1   # so characters can't take over monsters
             self.characters[name] = c
             self.rooms[room].characters.append(name)
 
@@ -78,7 +65,7 @@ class derp_game():
         name = character.name
         if name in self.characters:
             char = self.characters[name]
-            if char.writer == None:
+            if char.writer == None and not char.flags & Character_Flags.MONSTER:
                 char.writer = writer
                 log.debug(f'found character: {name}')
                 await dnet.send_ACCEPT(writer, LurkType.CHARACTER)

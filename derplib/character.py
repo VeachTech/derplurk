@@ -47,11 +47,13 @@ def describe_flags(f):
     return s
 
 class Stats():
-    attack = 0
-    defense = 0
-    regen = 0
-    health = 0
-    gold = 0
+
+    def __init__(self):
+        self.attack = 0
+        self.defense = 0
+        self.regen = 0
+        self.health = 0
+        self.gold = 0
 
     def pack(self):
         stat_bytes = struct.pack('<HHHhH',
@@ -64,12 +66,15 @@ class Stats():
 
 class Character():
 
-    name = ''
-    flags = Character_Flags(value=0)
-    stats = Stats()
-    current_room = 0
-    description = ''
-    writer = None
+
+
+    def __init__(self):
+        self.name = ''
+        self.flags = Character_Flags(value=0)
+        self.stats = Stats()
+        self.current_room = 0
+        self.description = ''
+        self.writer = None
 
     async def receive(self, reader):
         name_bytes = await reader.readexactly(32)

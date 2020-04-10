@@ -11,12 +11,12 @@ log = logging.getLogger('Room')
 
 class Room():
     
-    game = None
-    name = ''
-    number = 0
-    description = ''
-    connections = [] # list of rooms this one is connected to
-    characters = []
+    # game = None
+    # name = ''
+    # number = 0
+    # description = ''
+    # connections = [] # list of rooms this one is connected to
+    # characters = []
 
     def __init__(self, game, name, number, description, connections, characters):
         self.game = game
@@ -34,7 +34,7 @@ class Room():
         char = self.game.characters[name]
         # apply regen health
         char.stats.health += char.stats.regen
-        log.debug(f'{char.name} entered room #{self.number}')
+        # log.debug(f'{char.name} entered room #{self.number}')
 
         if char.stats.health > 100:
             char.stats.health = 100
@@ -51,6 +51,7 @@ class Room():
     async def leave_room(self, name, number):
         char = self.game.characters[name]
         if char.flags & Character_Flags.ALIVE == 0:
+            # log.debug(f'{char.name} is dead...')
             return "DEAD"
 
         if number in self.connections:
@@ -68,7 +69,7 @@ class Room():
             return "Invalid Room"
 
     async def fight(self, name):
-        #TODO get players with join battle + named character
+        #DONE get players with join battle + named character
         players = [self.game.characters[name],]
         monsters = []
         for char in self.characters:
@@ -82,9 +83,9 @@ class Room():
         if not monsters:
             return "nofight"
 
-        log.debug('Players in battle:')
-        for player in players:
-            log.debug(f'{player.name},')
+        # log.debug('Players in battle:')
+        # for player in players:
+        #     log.debug(f'{player.name}, Health: {player.stats.health}')
         
         #TODO fight clalculations
         players_attack = 0
@@ -93,20 +94,28 @@ class Room():
         for player in players:
             players_attack += player.stats.attack
         
+        # log.debug(f'Players total attack: {players_attack}')
+        
         #attack monsters
+        log.debug('Monsters in battle')
         for monster in monsters:
+            # log.debug(f'{monster.name}, Health {monster.stats.health}')
             damage = players_attack - monster.stats.defense
             if damage > 0:
                 monster.stats.health -= damage
                 if monster.stats.health <= 0:
                     monster.flags &= ~Character_Flags.ALIVE # Set to DEAD
-                    log.debug(f'{monster.name} died')
+                    # log.debug(f'{monster.name} died')
                     awarded_gold += 50
+        
+        # for monster in monsters:
+        #     log.debug(f'Monster: {monster.name} now has health {monster.stats.health}')
         
         # get remaining monster damage
         for monster in monsters:
             if monster.flags & Character_Flags.ALIVE:
                 monsters_attack += monster.stats.attack
+        # log.debug(f'Monsters total attack: {monsters_attack}')
         
         # deal damage to players and give gold regardless of death
         for player in players:
@@ -116,7 +125,10 @@ class Room():
                 player.stats.health -= damage
                 if player.stats.health <= 0:
                     player.flags &= ~Character_Flags.ALIVE
-                    log.debug(f'{player.name} died')
+                    # log.debug(f'{player.name} died')
+
+        # for player in players:
+        #     log.debug(f'{player.name}, Health {player.stats.health}, Gold {player.stats.gold}')
         
         #TODO update all characters of new stats
         await self.update_all_characters()

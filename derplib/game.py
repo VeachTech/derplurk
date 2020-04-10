@@ -3,9 +3,14 @@ import struct
 from .lurktype import LurkType
 
 class Game():
-    initial_points = 0
-    stat_limit = 65535
-    description = ''
+    # initial_points = 0
+    # stat_limit = 65535
+    # description = ''
+
+    def __init__(self):
+        self.initial_points = 0
+        self.stat_limit = 65535
+        self.description = ''
 
     def receive(self, soc):
         buf = soc.recv(6, socket.MSG_WAITALL)
