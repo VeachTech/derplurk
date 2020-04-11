@@ -27,8 +27,8 @@ async def client_connection(reader, writer):
     character_name = ''
 
     # send version info to client
-    await dnet.send_VERSION(writer)
-    await dnet.send_GAME(writer, derp.game)
+    # await dnet.send_VERSION(writer)
+    # await dnet.send_GAME(writer, derp.game)
 
     # while character_name == '':
     #     # Initial receive, accept only character or send Error
@@ -58,8 +58,12 @@ async def client_connection(reader, writer):
     num_errors = 0
 
     # main loop for client
-    log.debug('entering main loop')
+    #log.debug('entering main loop')
     try:
+        # send version info to client
+        await dnet.send_VERSION(writer)
+        await dnet.send_GAME(writer, derp.game)
+
         while True:
             #get lurktype
             try:
