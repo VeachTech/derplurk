@@ -114,14 +114,14 @@ class Character():
 
 
     def pack(self):
-        name_bytes = bytes(self.name, 'utf-8')[:31].ljust(32, bytes(1))
+        name_bytes = bytes(self.name, 'ascii')[:31].ljust(32, bytes(1))
         # print(f'Name: {self.name}, bytes: {name_bytes}')
         flag_byte = struct.pack('<B', self.flags)
         # print(f'Flags: {self.flags}, byte: {flag_byte}')
         stat_bytes = self.stats.pack()
         room_bytes = struct.pack('<H', self.current_room)
         desc_length_bytes = struct.pack('<H', len(self.description))
-        description_bytes = bytes(self.description, 'utf-8')
+        description_bytes = bytes(self.description, 'ascii')
         packet = LurkType.CHARACTER + name_bytes + flag_byte + stat_bytes + room_bytes + desc_length_bytes + description_bytes
         return packet
 
