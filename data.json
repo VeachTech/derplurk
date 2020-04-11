@@ -29,6 +29,24 @@
             "name": "The bosses' lair",
             "description": "Behold, multiple bosses!",
             "connections": [2,3]
+        },
+        {
+            "number": 5,
+            "name": "Room #5",
+            "description": "Behold, a boring room!",
+            "connections": [4,6]
+        },
+        {
+            "number": 6,
+            "name": "Room #6",
+            "description": "Behold, another room!",
+            "connections": [5,7]
+        },
+        {
+            "number": 7,
+            "name": "Room #7",
+            "description": "Behold, ok this is enough!",
+            "connections": [6]
         }
     ],
     "Monsters": [
@@ -70,6 +88,36 @@
             "defense": 70,
             "regen": 0,
             "health": 8000,
+            "gold": 500
+        },
+        {
+            "name": "Bot killer",
+            "description": "Super health",
+            "room": 5,
+            "attack": 800,
+            "defense": 700,
+            "regen": 0,
+            "health": 10000,
+            "gold": 500
+        },
+        {
+            "name": "Clever Boss",
+            "description": "Not the cleverest of names",
+            "room": 6,
+            "attack": 800,
+            "defense": 700,
+            "regen": 0,
+            "health": 8000,
+            "gold": 500
+        },
+        {
+            "name": "Holy Cow",
+            "description": "Great Scott, he's the last one",
+            "room": 7,
+            "attack": 800,
+            "defense": 800,
+            "regen": 0,
+            "health": 12000,
             "gold": 500
         }
     ]
