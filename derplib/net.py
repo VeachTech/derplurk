@@ -55,8 +55,8 @@ def pack_MESSAGE(recipient, sender, message):
     length_bytes = struct.pack('<H', len(message))
     recipient_bytes = bytes(recipient, 'ascii')[:31].ljust(32, bytes(1))
     sender_bytes = bytes(sender, 'ascii')[:31].ljust(32, bytes(1))
-    message_bytes = bytes(message, 'ascii')
-    packet = LurkType.MESSAGE + length_bytes + recipient_bytes + sender_bytes + message_bytes
+    # message_bytes = bytes(message, 'ascii')
+    packet = LurkType.MESSAGE + length_bytes + recipient_bytes + sender_bytes + message # + message_bytes
     return packet
 
 async def send_MESSAGE(writer, recipient, sender, message):
