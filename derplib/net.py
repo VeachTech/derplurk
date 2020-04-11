@@ -42,7 +42,7 @@ async def receive_MESSAGE(reader):
     logging.debug(f"Sender: {sender}")
     message = await reader.readexactly(length)
     message = message.decode('ascii', 'ignore').rstrip('\x00')
-    logging.debug(f"Message: {message}")
+    # logging.debug(f"Message: {message}")
 
     return recipient, sender, message
 
