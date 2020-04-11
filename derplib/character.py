@@ -78,7 +78,9 @@ class Character():
 
     async def receive(self, reader):
         name_bytes = await reader.readexactly(32)
-        self.name = name_bytes.decode('ascii', 'ignore').rstrip('\x00')
+        #self.name = name_bytes.decode('ascii', 'ignore').rstrip('\x00')
+        end = name_bytes.find(b'\x00')
+        self.name = name_bytes[:end].decode('ascii')
         flag_buf = await reader.readexactly(1)
         self.flags = struct.unpack('<B', flag_buf)[0]
         stats_buf = await reader.readexactly(14)

@@ -35,10 +35,14 @@ async def receive_MESSAGE(reader):
     length = struct.unpack('<H', length)[0]
     logging.debug(f"Message length: {length}")
     recipient = await reader.readexactly(32)
-    recipient = recipient.decode('ascii', 'ignore').rstrip('\x00')
+    #recipient = recipient.decode('ascii', 'ignore').rstrip('\x00')
+    end = recipient.find(b'\x00')
+    recipient = recipient[:end].decode('ascii')
     logging.debug(f"Recipient: {recipient}")
     sender = await reader.readexactly(32)
-    sender = sender.decode('ascii', 'ignore').rstrip('\x00')
+    end = sender.find(b'\x00')
+    sender = sender[:end].decode('ascii')
+    #sender = sender.decode('ascii', 'ignore').rstrip('\x00')
     logging.debug(f"Sender: {sender}")
     message = await reader.readexactly(length)
     message = message.decode('ascii', 'ignore').rstrip('\x00')
@@ -138,7 +142,9 @@ def send_FIGHT(soc):
 
 async def receive_PVPFIGHT(reader):
     data = reader.readexactly(32)
-    name = data.decode('ascii', 'ignore').rstrip('\x00')
+    #name = data.decode('ascii', 'ignore').rstrip('\x00')
+    end = data.find(b'\x00')
+    name = data[:end].decode('ascii')
     return name
 
 def send_PVPFIGHT(soc, target):
@@ -161,7 +167,9 @@ def send_PVPFIGHT(soc, target):
 
 async def receive_LOOT(reader):
     data = reader.readexactly(32)
-    name = data.decode('ascii', 'ignore').rstrip('\x00')
+    #name = data.decode('ascii', 'ignore').rstrip('\x00')
+    end = data.find(b'\x00')
+    name = data[:end].decode('ascii')
     return name
 
 def send_LOOT(soc, target):
