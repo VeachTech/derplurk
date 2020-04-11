@@ -18,13 +18,13 @@ class Game():
         self.initial_points = points
         self.stat_limit = limit
         desc_bytes = soc.recv(length, socket.MSG_WAITALL)
-        self.description = desc_bytes.decode('ascii')
+        self.description = desc_bytes.decode('utf-8')
 
     def pack(self):
         points_bytes = struct.pack('<H', self.initial_points)
         limit_bytes = struct.pack('<H', self.stat_limit)
         desc_length = struct.pack('<H', len(self.description))
-        desc_bytes = bytes(self.description, 'ascii')
+        desc_bytes = bytes(self.description, 'utf-8')
         return LurkType.GAME + points_bytes + limit_bytes + desc_length + desc_bytes
     
     def send(self, soc):

@@ -221,15 +221,15 @@ class Room():
     def pack(self):
         #TODO send name, number, and description
         number_bytes = struct.pack('<H', self.number)
-        name_bytes = bytes(self.name, 'ascii')[:31].ljust(32, bytes(1))
+        name_bytes = bytes(self.name, 'utf-8')[:31].ljust(32, bytes(1))
         description_len_bytes = struct.pack('<H', len(self.description))
-        description_bytes = bytes(self.description, 'ascii')
+        description_bytes = bytes(self.description, 'utf-8')
         return LurkType.ROOM + number_bytes + name_bytes + description_len_bytes + description_bytes
 
     def pack_as_connection(self):
         #TODO send name, number, and description
         number_bytes = struct.pack('<H', self.number)
-        name_bytes = bytes(self.name, 'ascii')[:31].ljust(32, bytes(1))
+        name_bytes = bytes(self.name, 'utf-8')[:31].ljust(32, bytes(1))
         description_len_bytes = struct.pack('<H', len(self.description))
-        description_bytes = bytes(self.description, 'ascii')
+        description_bytes = bytes(self.description, 'utf-8')
         return LurkType.CONNECTION + number_bytes + name_bytes + description_len_bytes + description_bytes
