@@ -58,6 +58,7 @@ async def client_connection(reader, writer):
     num_errors = 0
 
     # main loop for client
+    log.debug('entering main loop')
     try:
         while True:
             #get lurktype
@@ -91,22 +92,14 @@ async def client_connection(reader, writer):
 
                     except InvalidCharacter:
                         continue
-                    except asyncio.IncompleteReadError:
-                        writer.close()
-                        return
-                    except:
-                        writer.close()
-                        return
+                    # except asyncio.IncompleteReadError:
+                    #     writer.close()
+                    #     return
+                    # except:
+                    #     writer.close()
+                    #     return
             else:
                 await dnet.send_ERROR(writer, 0, 'Invalid Type sent')
-                num_errors += 1
-                if num_errors >= 5:
-                    break
-                else:
-                    continue
-
-            # if we have reached here, there was a successful message
-            num_errors = 0
     
     finally:
         if character_name != '':
