@@ -78,7 +78,7 @@ class Character():
 
     async def receive(self, reader):
         name_bytes = await reader.readexactly(32)
-        self.name = name_bytes.decode('utf-8').rstrip('\x00')
+        self.name = name_bytes.decode('ascii', 'ignore').rstrip('\x00')
         flag_buf = await reader.readexactly(1)
         self.flags = struct.unpack('<B', flag_buf)[0]
         stats_buf = await reader.readexactly(14)
@@ -90,7 +90,7 @@ class Character():
         self.stats.gold = g
         self.stats.current_room = room
         desc_bytes = await reader.readexactly(desc_length)
-        self.description = desc_bytes.decode('utf-8').rstrip('\x00')
+        self.description = desc_bytes.decode('ascii', 'ignore').rstrip('\x00')
     # def receive(self, soc):
     #     name_bytes = soc.recv(32, socket.MSG_WAITALL)
     #     self.name = name_bytes.decode('ascii').rstrip('\x00')
