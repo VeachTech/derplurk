@@ -32,7 +32,7 @@
         },
         {
             "number": 5,
-            "name": "Room #5",
+            "name": "maRoom #5",
             "description": "Behold, a boring room!",
             "connections": [4,6]
         },
@@ -74,50 +74,50 @@
             "name": "Killer Kyle",
             "description": "Oh, the alliteration!",
             "room": 4,
-            "attack": 666,
+            "attack": 66,
             "defense": 66,
             "regen": 0,
-            "health": 6666,
+            "health": 226,
             "gold": 200
         },
         {
             "name": "Communist Charlie",
             "description": "an alliteration and an enemy of freedom?",
             "room": 4,
-            "attack": 800,
-            "defense": 70,
+            "attack": 73,
+            "defense": 20,
             "regen": 0,
-            "health": 8000,
+            "health": 300,
             "gold": 500
         },
         {
-            "name": "Bot killer",
+            "name": "Super killer",
             "description": "Super health",
             "room": 5,
-            "attack": 800,
-            "defense": 700,
+            "attack": 72,
+            "defense": 82,
             "regen": 0,
-            "health": 10000,
+            "health": 300,
             "gold": 500
         },
         {
             "name": "Clever Boss",
             "description": "Not the cleverest of names",
             "room": 6,
-            "attack": 800,
-            "defense": 700,
+            "attack": 80,
+            "defense": 240,
             "regen": 0,
-            "health": 8000,
+            "health": 270,
             "gold": 500
         },
         {
             "name": "Holy Cow",
             "description": "Great Scott, he's the last one",
             "room": 7,
-            "attack": 800,
-            "defense": 800,
+            "attack": 78,
+            "defense": 130,
             "regen": 0,
-            "health": 12000,
+            "health": 290,
             "gold": 500
         }
     ]
