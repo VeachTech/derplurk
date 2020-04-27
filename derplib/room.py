@@ -38,13 +38,17 @@ class Room():
 
         if char.stats.health > 100:
             char.stats.health = 100
+        
+        # Trying to update character before sending room and other character data
+        self.characters.append(name)
+        await self.update_one_character(name)
         char.writer.write(room_data + existing_character_data)
         #DONE update whole room of new character
         asyncio.create_task(char.writer.drain())
         # asyncio.create_task(self.update_one_character(name))
         #DONE add character name to list
-        self.characters.append(name)
-        await self.update_one_character(name)
+        # self.characters.append(name)
+        # await self.update_one_character(name)
         
 
     #TODO not informing others of left player, Uh, might be my client

@@ -5,3 +5,6 @@ They change to the character sent rather than what's in the game
 Read = character is valid
 Started = character can play
 Alive = character is not dead :)
+
+Possibly sending wrong current room to player when
+connections are sent
