@@ -28,25 +28,37 @@
             "number": 4,
             "name": "The bosses' lair",
             "description": "Behold, multiple bosses!",
-            "connections": [2,3]
+            "connections": [2,3,5]
         },
         {
             "number": 5,
-            "name": "maRoom #5",
+            "name": "MaRoom #5",
             "description": "Behold, a boring room!",
-            "connections": [4,6]
+            "connections": [4,6,8]
         },
         {
             "number": 6,
-            "name": "Room #6",
+            "name": "Room of awesome",
             "description": "Behold, another room!",
             "connections": [5,7]
         },
         {
             "number": 7,
-            "name": "Room #7",
-            "description": "Behold, ok this is enough!",
+            "name": "The dullest of rooms",
+            "description": "Behold... ok this is enough",
             "connections": [6]
+        },
+        {
+            "number": 8,
+            "name": "Dead end",
+            "description": "there is nothing here, might as well turn back",
+            "connections": [5,9]
+        },
+        {
+            "number": 9,
+            "name": "Not so hidden room",
+            "description": "Ok, so you found the hidden room, which is also a dead end...",
+            "connections": [8]
         }
     ],
     "Monsters": [
@@ -74,18 +86,18 @@
             "name": "Killer Kyle",
             "description": "Oh, the alliteration!",
             "room": 4,
-            "attack": 66,
+            "attack": 86,
             "defense": 66,
             "regen": 0,
             "health": 226,
             "gold": 200
         },
         {
-            "name": "Communist Charlie",
-            "description": "an alliteration and an enemy of freedom?",
+            "name": "Angry Alexa",
+            "description": "Don't mess with amazon",
             "room": 4,
-            "attack": 73,
-            "defense": 20,
+            "attack": 113,
+            "defense": 40,
             "regen": 0,
             "health": 300,
             "gold": 500
@@ -112,12 +124,12 @@
         },
         {
             "name": "Holy Cow",
-            "description": "Great Scott, he's the last one",
+            "description": "It's made of pure gold",
             "room": 7,
-            "attack": 78,
+            "attack": 112,
             "defense": 130,
             "regen": 0,
-            "health": 290,
+            "health": 500,
             "gold": 500
         }
     ]
