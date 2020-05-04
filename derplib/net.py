@@ -167,7 +167,7 @@ def send_PVPFIGHT(soc, target):
 # 1-32	Name of target player
 
 async def receive_LOOT(reader):
-    data = reader.readexactly(32)
+    data = await reader.readexactly(32)
     #name = data.decode('ascii', 'ignore').rstrip('\x00')
     end = data.find(b'\x00')
     name = data[:end].decode('ascii')
