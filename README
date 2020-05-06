@@ -1,3 +1,4 @@
-There is a lot of dead code left over from my client
+There is a lot of dead code left over from my client's library
 
 The server starts in derpConnection.py (starts up with coroutines)
+python3 derpConnection.py 0.0.0.0 PORT
